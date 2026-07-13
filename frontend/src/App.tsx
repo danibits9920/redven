@@ -3,7 +3,6 @@ import { useAuth } from "./auth/AuthContext";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Buscar from "./pages/Buscar";
 import Movimientos from "./pages/Movimientos";
 import RegistrarMovimiento from "./pages/RegistrarMovimiento";
 import Centros from "./pages/Centros";
@@ -27,7 +26,6 @@ export default function App() {
       <Route path="/login" element={<Navigate to="/" replace />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/buscar" element={<Buscar />} />
         <Route path="/movimientos" element={<Movimientos />} />
         <Route path="/registrar" element={<RegistrarMovimiento />} />
         <Route path="/centros" element={<Centros />} />

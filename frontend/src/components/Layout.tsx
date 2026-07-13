@@ -5,7 +5,6 @@ import { useAuth } from "../auth/AuthContext";
 
 const enlacesBase = [
   { to: "/", label: "Dashboard", end: true },
-  { to: "/buscar", label: "Buscar" },
   { to: "/movimientos", label: "Movimientos" },
   { to: "/registrar", label: "Registrar" },
   { to: "/centros", label: "Centros" },
