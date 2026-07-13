@@ -3,7 +3,7 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { hashPassword } from "../lib/auth";
 import { asyncHandler } from "../lib/asyncHandler";
-import { BadRequest, NotFound } from "../lib/errors";
+import { BadRequest, NotFound, Forbidden } from "../lib/errors";
 import { requireAuth, requireRole } from "../middleware/auth";
 import { Rol } from "@prisma/client";
 
@@ -48,6 +48,11 @@ usuariosRouter.post(
     if (!parsed.success) throw BadRequest(parsed.error.issues[0].message);
     const { nombre, email, password, rol } = parsed.data;
 
+    // Solo un ADMIN puede crear administradores.
+    if (rol === Rol.ADMIN && req.usuario!.rol !== Rol.ADMIN) {
+      throw Forbidden("Solo un administrador puede crear administradores");
+    }
+
     const existente = await prisma.usuario.findUnique({ where: { email } });
     if (existente) throw BadRequest("Ya existe un usuario con ese email");
 
@@ -76,6 +81,17 @@ usuariosRouter.put(
 
     const existe = await prisma.usuario.findUnique({ where: { id: req.params.id } });
     if (!existe) throw NotFound("Usuario no encontrado");
+
+    // Jerarquia: solo un ADMIN puede editar a un administrador o ascender a alguien a admin.
+    const soyAdmin = req.usuario!.rol === Rol.ADMIN;
+    if (!soyAdmin) {
+      if (existe.rol === Rol.ADMIN) {
+        throw Forbidden("Solo un administrador puede editar a otro administrador");
+      }
+      if (parsed.data.rol === Rol.ADMIN) {
+        throw Forbidden("Solo un administrador puede asignar el rol de administrador");
+      }
+    }
 
     // Proteccion: no permitir bloquearte a ti mismo (evita quedar sin acceso).
     if (req.params.id === req.usuario!.id) {

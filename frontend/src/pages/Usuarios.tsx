@@ -7,6 +7,9 @@ import { useAuth } from "../auth/AuthContext";
 import { PageTitle } from "../components/ui";
 
 const ROLES: Rol[] = ["ADMIN", "SUPERIOR", "OPERADOR"];
+// Un superior no puede asignar el rol de administrador.
+const rolesAsignables = (soyAdmin: boolean): Rol[] =>
+  soyAdmin ? ROLES : ROLES.filter((r) => r !== "ADMIN");
 
 function BadgeRol({ rol }: { rol: Rol }) {
   const color = rol === "ADMIN" ? "danger" : rol === "SUPERIOR" ? "primary" : "secondary";
@@ -15,6 +18,7 @@ function BadgeRol({ rol }: { rol: Rol }) {
 
 export default function Usuarios() {
   const { usuario: yo } = useAuth();
+  const soyAdmin = yo?.rol === "ADMIN";
   const qc = useQueryClient();
   const [form, setForm] = useState({ nombre: "", email: "", password: "", rol: "OPERADOR" as Rol });
   const [error, setError] = useState("");
@@ -91,7 +95,7 @@ export default function Usuarios() {
                     value={form.rol}
                     onChange={(e) => setForm({ ...form, rol: e.target.value as Rol })}
                   >
-                    {ROLES.map((r) => (
+                    {rolesAsignables(soyAdmin).map((r) => (
                       <option key={r} value={r}>
                         {ROL_LABEL[r]}
                       </option>
@@ -132,6 +136,8 @@ export default function Usuarios() {
                 <tbody>
                   {data?.map((u) => {
                     const soyYo = u.id === yo?.id;
+                    // Un superior no puede editar administradores; nadie se edita a si mismo aqui.
+                    const editable = !soyYo && (soyAdmin || u.rol !== "ADMIN");
                     return (
                       <tr key={u.id}>
                         <td className="fw-medium">
@@ -140,9 +146,7 @@ export default function Usuarios() {
                         </td>
                         <td className="d-none d-sm-table-cell text-secondary">{u.email}</td>
                         <td>
-                          {soyYo ? (
-                            <BadgeRol rol={u.rol} />
-                          ) : (
+                          {editable ? (
                             <Form.Select
                               size="sm"
                               value={u.rol}
@@ -154,18 +158,18 @@ export default function Usuarios() {
                                 })
                               }
                             >
-                              {ROLES.map((r) => (
+                              {rolesAsignables(soyAdmin).map((r) => (
                                 <option key={r} value={r}>
                                   {ROL_LABEL[r]}
                                 </option>
                               ))}
                             </Form.Select>
+                          ) : (
+                            <BadgeRol rol={u.rol} />
                           )}
                         </td>
                         <td className="text-end">
-                          {soyYo ? (
-                            <Badge bg="success">Activo</Badge>
-                          ) : (
+                          {editable ? (
                             <Button
                               size="sm"
                               variant={u.activo ? "outline-danger" : "outline-success"}
@@ -178,6 +182,10 @@ export default function Usuarios() {
                             >
                               {u.activo ? "Desactivar" : "Activar"}
                             </Button>
+                          ) : (
+                            <Badge bg={u.activo ? "success" : "secondary"}>
+                              {u.activo ? "Activo" : "Inactivo"}
+                            </Badge>
                           )}
                         </td>
                       </tr>
