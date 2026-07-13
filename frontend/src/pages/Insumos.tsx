@@ -3,11 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Row, Col, Card, Form, Button, Alert, Table, Spinner } from "react-bootstrap";
 import { api, apiError } from "../api/client";
 import type { Insumo } from "../types";
-import { useAuth } from "../auth/AuthContext";
 import { PageTitle } from "../components/ui";
 
 export default function Insumos() {
-  const { esAdmin } = useAuth();
   const qc = useQueryClient();
   const [form, setForm] = useState({
     nombre: "",
@@ -46,11 +44,10 @@ export default function Insumos() {
       <PageTitle>Insumos</PageTitle>
 
       <Row className="g-3">
-        {esAdmin && (
-          <Col xs={12} lg={4} className="order-lg-2">
-            <Card className="border-0 shadow-sm">
-              <Card.Body>
-                <h2 className="h6 mb-3">Nuevo insumo</h2>
+        <Col xs={12} lg={4} className="order-lg-2">
+          <Card className="border-0 shadow-sm">
+            <Card.Body>
+              <h2 className="h6 mb-3">Nuevo insumo</h2>
                 {error && <Alert variant="danger">{error}</Alert>}
                 <Form
                   onSubmit={(e) => {
@@ -105,9 +102,8 @@ export default function Insumos() {
               </Card.Body>
             </Card>
           </Col>
-        )}
 
-        <Col xs={12} lg={esAdmin ? 8 : 12} className="order-lg-1">
+        <Col xs={12} lg={8} className="order-lg-1">
           {isLoading ? (
             <div className="text-center py-5">
               <Spinner animation="border" variant="success" />

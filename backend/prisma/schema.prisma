@@ -23,8 +23,9 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 enum Rol {
-  ADMIN // gestiona catalogos, usuarios y registra movimientos
-  OPERADOR // registra entradas y salidas
+  ADMIN // dueno: todo, incluida la gestion de usuarios
+  SUPERIOR // mismo poder que ADMIN (puede gestionar usuarios)
+  OPERADOR // usuario normal: hace todo EXCEPTO gestionar usuarios
 }
 
 enum TipoMovimiento {

@@ -3,12 +3,11 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { asyncHandler } from "../lib/asyncHandler";
 import { BadRequest, NotFound } from "../lib/errors";
-import { requireAuth, requireRole } from "../middleware/auth";
-import { Rol } from "@prisma/client";
+import { requireAuth } from "../middleware/auth";
 
 export const centrosRouter = Router();
 
-// Ver requiere estar autenticado; crear/editar requiere ADMIN.
+// Cualquier usuario autenticado puede ver y gestionar centros.
 centrosRouter.use(requireAuth);
 
 // GET /api/centros
@@ -40,10 +39,9 @@ const centroSchema = z.object({
   activo: z.boolean().optional(),
 });
 
-// POST /api/centros (ADMIN)
+// POST /api/centros
 centrosRouter.post(
   "/",
-  requireRole(Rol.ADMIN),
   asyncHandler(async (req, res) => {
     const parsed = centroSchema.safeParse(req.body);
     if (!parsed.success) throw BadRequest(parsed.error.issues[0].message);
@@ -52,10 +50,9 @@ centrosRouter.post(
   })
 );
 
-// PUT /api/centros/:id (ADMIN)
+// PUT /api/centros/:id
 centrosRouter.put(
   "/:id",
-  requireRole(Rol.ADMIN),
   asyncHandler(async (req, res) => {
     const parsed = centroSchema.partial().safeParse(req.body);
     if (!parsed.success) throw BadRequest(parsed.error.issues[0].message);

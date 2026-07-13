@@ -6,7 +6,8 @@ interface AuthCtx {
   usuario: Usuario | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  esAdmin: boolean;
+  // Puede gestionar usuarios: ADMIN o SUPERIOR.
+  gestionaUsuarios: boolean;
 }
 
 const Ctx = createContext<AuthCtx | null>(null);
@@ -33,7 +34,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <Ctx.Provider value={{ usuario, login, logout, esAdmin: usuario?.rol === "ADMIN" }}>
+    <Ctx.Provider
+      value={{
+        usuario,
+        login,
+        logout,
+        gestionaUsuarios: usuario?.rol === "ADMIN" || usuario?.rol === "SUPERIOR",
+      }}
+    >
       {children}
     </Ctx.Provider>
   );

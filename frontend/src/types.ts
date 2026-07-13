@@ -1,4 +1,10 @@
-export type Rol = "ADMIN" | "OPERADOR";
+export type Rol = "ADMIN" | "SUPERIOR" | "OPERADOR";
+
+export const ROL_LABEL: Record<Rol, string> = {
+  ADMIN: "Administrador",
+  SUPERIOR: "Superior",
+  OPERADOR: "Normal",
+};
 export type TipoMovimiento = "ENTRADA" | "SALIDA";
 
 export interface Usuario {

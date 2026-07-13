@@ -8,9 +8,10 @@ import Movimientos from "./pages/Movimientos";
 import RegistrarMovimiento from "./pages/RegistrarMovimiento";
 import Centros from "./pages/Centros";
 import Insumos from "./pages/Insumos";
+import Usuarios from "./pages/Usuarios";
 
 export default function App() {
-  const { usuario } = useAuth();
+  const { usuario, gestionaUsuarios } = useAuth();
 
   if (!usuario) {
     return (
@@ -31,6 +32,10 @@ export default function App() {
         <Route path="/registrar" element={<RegistrarMovimiento />} />
         <Route path="/centros" element={<Centros />} />
         <Route path="/insumos" element={<Insumos />} />
+        <Route
+          path="/usuarios"
+          element={gestionaUsuarios ? <Usuarios /> : <Navigate to="/" replace />}
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

@@ -3,11 +3,11 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 import { asyncHandler } from "../lib/asyncHandler";
 import { BadRequest, NotFound } from "../lib/errors";
-import { requireAuth, requireRole } from "../middleware/auth";
-import { Rol } from "@prisma/client";
+import { requireAuth } from "../middleware/auth";
 
 export const insumosRouter = Router();
 
+// Cualquier usuario autenticado puede ver y gestionar insumos.
 insumosRouter.use(requireAuth);
 
 // GET /api/insumos
@@ -38,10 +38,9 @@ const insumoSchema = z.object({
   activo: z.boolean().optional(),
 });
 
-// POST /api/insumos (ADMIN)
+// POST /api/insumos
 insumosRouter.post(
   "/",
-  requireRole(Rol.ADMIN),
   asyncHandler(async (req, res) => {
     const parsed = insumoSchema.safeParse(req.body);
     if (!parsed.success) throw BadRequest(parsed.error.issues[0].message);
@@ -50,10 +49,9 @@ insumosRouter.post(
   })
 );
 
-// PUT /api/insumos/:id (ADMIN)
+// PUT /api/insumos/:id
 insumosRouter.put(
   "/:id",
-  requireRole(Rol.ADMIN),
   asyncHandler(async (req, res) => {
     const parsed = insumoSchema.partial().safeParse(req.body);
     if (!parsed.success) throw BadRequest(parsed.error.issues[0].message);

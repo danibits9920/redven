@@ -9,8 +9,8 @@ import { Rol } from "@prisma/client";
 
 export const usuariosRouter = Router();
 
-// Todas las rutas de usuarios requieren ADMIN.
-usuariosRouter.use(requireAuth, requireRole(Rol.ADMIN));
+// Gestionar usuarios: solo ADMIN y SUPERIOR.
+usuariosRouter.use(requireAuth, requireRole(Rol.ADMIN, Rol.SUPERIOR));
 
 const selectPublico = {
   id: true,
@@ -76,6 +76,16 @@ usuariosRouter.put(
 
     const existe = await prisma.usuario.findUnique({ where: { id: req.params.id } });
     if (!existe) throw NotFound("Usuario no encontrado");
+
+    // Proteccion: no permitir bloquearte a ti mismo (evita quedar sin acceso).
+    if (req.params.id === req.usuario!.id) {
+      if (parsed.data.rol && parsed.data.rol !== existe.rol) {
+        throw BadRequest("No puedes cambiar tu propio rol");
+      }
+      if (parsed.data.activo === false) {
+        throw BadRequest("No puedes desactivar tu propia cuenta");
+      }
+    }
 
     const { password, ...resto } = parsed.data;
     const usuario = await prisma.usuario.update({

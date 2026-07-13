@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { Navbar, Nav, Container, Button, Offcanvas } from "react-bootstrap";
 import { useAuth } from "../auth/AuthContext";
 
-const enlaces = [
+const enlacesBase = [
   { to: "/", label: "Dashboard", end: true },
   { to: "/buscar", label: "Buscar" },
   { to: "/movimientos", label: "Movimientos" },
@@ -13,9 +13,13 @@ const enlaces = [
 ];
 
 export default function Layout() {
-  const { usuario, logout } = useAuth();
+  const { usuario, logout, gestionaUsuarios } = useAuth();
   const navigate = useNavigate();
   const [show, setShow] = useState(false);
+
+  const enlaces = gestionaUsuarios
+    ? [...enlacesBase, { to: "/usuarios", label: "Usuarios" }]
+    : enlacesBase;
 
   function salir() {
     logout();
