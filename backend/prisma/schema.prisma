@@ -1,0 +1,132 @@
+// RedAcopio - Modelo de datos
+// Control de insumos que llegan a un almacen central y su distribucion a
+// centros de acopio. El stock NUNCA se guarda como numero editable: se calcula
+// a partir de los movimientos (entradas - salidas). Asi todo queda auditable.
+//
+// Flujo:
+//   ENTRADA  -> llegan insumos al almacen (donaciones, cargamentos)
+//   SALIDA   -> se distribuyen del almacen a un centro de acopio
+//
+// El almacen es unico e implicito. Los centros de acopio son los destinos.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Rol {
+  ADMIN // gestiona catalogos, usuarios y registra movimientos
+  OPERADOR // registra entradas y salidas
+}
+
+enum TipoMovimiento {
+  ENTRADA // insumos que llegan al almacen
+  SALIDA // insumos que se distribuyen a un centro de acopio
+}
+
+// ---------------------------------------------------------------------------
+// Usuarios y autenticacion
+// ---------------------------------------------------------------------------
+
+model Usuario {
+  id           String   @id @default(cuid())
+  nombre       String
+  email        String   @unique
+  passwordHash String
+  rol          Rol      @default(OPERADOR)
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  movimientos Movimiento[] // movimientos registrados por este usuario
+
+  @@map("usuarios")
+}
+
+// ---------------------------------------------------------------------------
+// Catalogos
+// ---------------------------------------------------------------------------
+
+model CentroAcopio {
+  id          String   @id @default(cuid())
+  nombre      String
+  direccion   String?
+  responsable String?
+  contacto    String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  movimientos Movimiento[] // salidas dirigidas a este centro
+
+  @@map("centros_acopio")
+}
+
+model Insumo {
+  id           String   @id @default(cuid())
+  nombre       String
+  categoria    String? // ej: Alimentos, Higiene, Medicinas, Agua
+  unidadMedida String   @default("unidad") // kg, litros, unidad, caja...
+  // Si el insumo se maneja por cajas, cuantas unidades trae una caja (default editable al registrar).
+  // null = solo se maneja de forma individual.
+  unidadesPorCaja Int?
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  items MovimientoItem[]
+
+  @@map("insumos")
+}
+
+// ---------------------------------------------------------------------------
+// Movimientos (corazon del sistema)
+// ---------------------------------------------------------------------------
+
+model Movimiento {
+  id        String         @id @default(cuid())
+  tipo      TipoMovimiento
+  centroId  String? // null en ENTRADA (va al almacen); en SALIDA es el centro que recibe
+  fecha     DateTime       @default(now())
+  usuarioId String // quien registro el movimiento
+  origen    String? // en ENTRADA: procedencia/donante. Texto libre
+  nota      String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  centro  CentroAcopio?    @relation(fields: [centroId], references: [id])
+  usuario Usuario          @relation(fields: [usuarioId], references: [id])
+  items   MovimientoItem[]
+
+  @@index([centroId])
+  @@index([tipo])
+  @@index([fecha])
+  @@map("movimientos")
+}
+
+model MovimientoItem {
+  id           String  @id @default(cuid())
+  movimientoId String
+  insumoId     String
+  // cantidad SIEMPRE en unidades base: es la que cuenta para el stock.
+  cantidad     Decimal @db.Decimal(14, 3)
+  // Metadatos de presentacion (solo para mostrar la trazabilidad "en cajas").
+  porCaja         Boolean  @default(false)
+  cajas           Decimal? @db.Decimal(14, 3) // numero de cajas registradas
+  unidadesPorCaja Int? // unidades por caja al momento del movimiento
+
+  movimiento Movimiento @relation(fields: [movimientoId], references: [id], onDelete: Cascade)
+  insumo     Insumo     @relation(fields: [insumoId], references: [id])
+
+  @@index([movimientoId])
+  @@index([insumoId])
+  @@map("movimiento_items")
+}

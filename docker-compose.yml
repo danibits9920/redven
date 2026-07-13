@@ -1,0 +1,19 @@
+# PostgreSQL local para desarrollo. Igual motor que usaras en Render/Neon.
+# Arrancar:  docker compose up -d
+# Detener:   docker compose down
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: redacopio-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: redacopio
+      POSTGRES_PASSWORD: redacopio
+      POSTGRES_DB: redacopio
+    ports:
+      - "5432:5432"
+    volumes:
+      - redacopio_pgdata:/var/lib/postgresql/data
+
+volumes:
+  redacopio_pgdata:

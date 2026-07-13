@@ -1,0 +1,42 @@
+/* Estilos base sobre Bootstrap. Enfoque mobile-first. */
+
+:root {
+  --marca: #25864c;
+  --marca-osc: #1d6b3d;
+}
+
+body {
+  background-color: #f6f7f9;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Color de marca para la navbar y botones primarios */
+.bg-marca {
+  background-color: var(--marca) !important;
+}
+.btn-marca {
+  background-color: var(--marca);
+  border-color: var(--marca);
+  color: #fff;
+}
+.btn-marca:hover,
+.btn-marca:focus {
+  background-color: var(--marca-osc);
+  border-color: var(--marca-osc);
+  color: #fff;
+}
+.text-marca {
+  color: var(--marca) !important;
+}
+
+/* Objetivos tactiles comodos en telefono */
+.btn,
+.form-control,
+.form-select {
+  min-height: 44px;
+}
+
+/* Que las tablas no rompan el ancho en pantallas chicas */
+.table {
+  vertical-align: middle;
+}
